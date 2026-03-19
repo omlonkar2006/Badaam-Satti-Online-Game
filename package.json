@@ -1,0 +1,17 @@
+{
+    "name": "badam-satti-monolith",
+    "version": "1.0.0",
+    "description": "Badam Satti card game with integrated server and client",
+    "main": "server/index.js",
+    "scripts": {
+        "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+        "build-client": "cd client && npm run build",
+        "start": "node server/index.js",
+        "render-postbuild": "npm run build-client"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "socket.io": "^4.7.2",
+        "cors": "^2.8.5"
+    }
+}
