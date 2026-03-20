@@ -3,8 +3,8 @@ import { useSocket } from '../context/SocketContext';
 
 const AVATARS = ['👨', '👩', '🧑', '🐶', '🐱', '🦊', '🦄', '🐸', '🦁'];
 
-export default function Lobby({ onJoin }) {
-    const socket = useSocket();
+export default function Lobby({ playerId }) {
+    const { socket, isConnected } = useSocket();
     const [name, setName] = useState('');
     const [roomId, setRoomId] = useState('');
     const [maxRounds, setMaxRounds] = useState(1);
@@ -15,13 +15,24 @@ export default function Lobby({ onJoin }) {
     const handleCreate = () => {
         if (!name) return setError('Name is required');
         const newRoomId = Math.random().toString(36).substring(7).toUpperCase();
-        socket.emit('create_room', { name, roomId: newRoomId, maxRounds, avatar: selectedAvatar });
+        sessionStorage.setItem('playerName', name);
+        sessionStorage.setItem('playerAvatar', selectedAvatar);
+        socket.emit('create_room', { name, roomId: newRoomId, maxRounds, avatar: selectedAvatar, playerId });
     };
 
     const handleJoin = () => {
         if (!name || !roomId) return setError('Name and Room ID required');
-        socket.emit('join_room', { name, roomId, avatar: selectedAvatar });
+        sessionStorage.setItem('playerName', name);
+        sessionStorage.setItem('playerAvatar', selectedAvatar);
+        socket.emit('join_room', { name, roomId, avatar: selectedAvatar, playerId });
     };
+
+    React.useEffect(() => {
+        const storedName = sessionStorage.getItem('playerName');
+        const storedAvatar = sessionStorage.getItem('playerAvatar');
+        if (storedName) setName(storedName);
+        if (storedAvatar) setSelectedAvatar(storedAvatar);
+    }, []);
 
     return (
         <div className="lobby">
@@ -54,10 +65,16 @@ export default function Lobby({ onJoin }) {
                     onChange={e => setName(e.target.value)}
                 />
 
+                {!isConnected && (
+                    <div style={{ color: 'var(--warning-color, #ffaa00)', marginBottom: '10px', fontSize: '0.9rem', textAlign: 'center' }}>
+                        ⚠️ Waking up server... This may take up to 50 seconds on free hosting.
+                    </div>
+                )}
+
                 {isCreating ? (
                     <div>
                         <p>Creating Room...</p>
-                        <button onClick={handleCreate}>Start Room</button>
+                        <button onClick={handleCreate} disabled={!isConnected}>Start Room</button>
                         <button onClick={() => setIsCreating(false)}>Cancel</button>
                     </div>
                 ) : (
@@ -68,7 +85,7 @@ export default function Lobby({ onJoin }) {
                             value={roomId}
                             onChange={e => setRoomId(e.target.value)}
                         />
-                        <button onClick={handleJoin}>Join Game</button>
+                        <button onClick={handleJoin} disabled={!isConnected}>Join Game</button>
                         <div style={{ margin: '10px 0' }}>OR</div>
 
                         <div className="round-select">
@@ -78,7 +95,7 @@ export default function Lobby({ onJoin }) {
                             </select>
                         </div>
 
-                        <button onClick={handleCreate}>Create New Game</button>
+                        <button onClick={handleCreate} disabled={!isConnected}>Create New Game</button>
                     </div>
                 )}
 

@@ -8,13 +8,14 @@ import { useAudio } from '../context/AudioContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function GameRoom({ room, userId }) {
-    const socket = useSocket();
+    const { socket } = useSocket();
     const { playSound } = useAudio();
     const isHost = room.hostId === userId;
     const isMyTurn = room.players[room.currentTurnIndex]?.id === userId;
     const myPlayer = room.players.find(p => p.id === userId);
     const [showScoreboard, setShowScoreboard] = useState(false);
     const [showPassIndicator, setShowPassIndicator] = useState(false);
+    const [copiedIndicator, setCopiedIndicator] = useState(false);
 
     useEffect(() => {
         if (isMyTurn && room.status === 'PLAYING') {
@@ -62,7 +63,20 @@ export default function GameRoom({ room, userId }) {
                     <div className="lobby-info">
                         <h3>Players ({room.players.length}/4):</h3>
                         <ul>
-                            {room.players.map(p => <li key={p.id}><span style={{ fontSize: '1.2rem', marginRight: '5px' }}>{p.avatar}</span> {p.name} {p.id === room.hostId ? '(Host)' : ''}</li>)}
+                            {room.players.map(p => (
+                                <li key={p.id}>
+                                    <span style={{ fontSize: '1.2rem', marginRight: '5px' }}>{p.avatar}</span> 
+                                    {p.name} {p.id === room.hostId ? '(Host)' : ''}
+                                    {isHost && p.id !== room.hostId && (
+                                        <button 
+                                            onClick={() => socket.emit('kick_player', { roomId: room.id, playerId: p.id })}
+                                            style={{ marginLeft: '10px', fontSize: '0.7rem', padding: '2px 5px', background: 'var(--danger-color, #ff4c4c)', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer' }}
+                                        >
+                                            Kick
+                                        </button>
+                                    )}
+                                </li>
+                            ))}
                         </ul>
                         {isHost && room.players.length >= 3 && (
                             <button onClick={handleStartGame}>Start Game</button>
@@ -120,7 +134,32 @@ export default function GameRoom({ room, userId }) {
 
             <div className="game-header">
                 <div className="room-info">
-                    <h2>Room: {room.id}</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                        <h2 style={{ margin: 0 }}>Room: {room.id}</h2>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(room.id);
+                                setCopiedIndicator(true);
+                                setTimeout(() => setCopiedIndicator(false), 2000);
+                            }}
+                            style={{
+                                padding: '4px 8px',
+                                background: copiedIndicator ? 'var(--success-color, #4CAF50)' : 'rgba(255, 255, 255, 0.2)',
+                                color: 'white',
+                                border: '1px solid rgba(255, 255, 255, 0.4)',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                transition: 'all 0.2s'
+                            }}
+                            title="Copy Room Code to send to friends"
+                        >
+                            {copiedIndicator ? '✓ Copied!' : '📋 Copy Code'}
+                        </button>
+                    </div>
                     <span className="round-badge">Round {room.roundCount} / {room.maxRounds}</span>
                 </div>
             </div>

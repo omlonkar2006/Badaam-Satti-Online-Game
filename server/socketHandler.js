@@ -1,13 +1,14 @@
 const {
-    createRoom, joinRoom, getRoom, leaveRoom, startGame, playCard, passTurn, addBot, executeBotTurn
+    createRoom, joinRoom, getRoom, leaveRoom, startGame, playCard, passTurn, kickPlayer, addBot, executeBotTurn
 } = require('./gameManager');
 
 module.exports = (io) => {
     io.on('connection', (socket) => {
         console.log(`User connected: ${socket.id}`);
 
-        socket.on('create_room', ({ name, roomId, maxRounds, avatar }) => {
-            const result = createRoom(roomId, socket.id, name, maxRounds, avatar);
+        socket.on('create_room', ({ name, roomId, maxRounds, avatar, playerId }) => {
+            socket.playerId = playerId || socket.id;
+            const result = createRoom(roomId, socket.playerId, name, maxRounds, avatar);
             if (result.success) {
                 socket.join(roomId);
                 // Return updated room list or specific room info
@@ -18,8 +19,9 @@ module.exports = (io) => {
             }
         });
 
-        socket.on('join_room', ({ name, roomId, avatar }) => {
-            const result = joinRoom(roomId, socket.id, name, avatar);
+        socket.on('join_room', ({ name, roomId, avatar, playerId }) => {
+            socket.playerId = playerId || socket.id;
+            const result = joinRoom(roomId, socket.playerId, name, avatar);
             if (result.success) {
                 socket.join(roomId);
                 io.to(roomId).emit('room_update', result.room);
@@ -29,8 +31,22 @@ module.exports = (io) => {
             }
         });
 
+        socket.on('rejoin_room', ({ roomId, playerId }) => {
+            socket.playerId = playerId;
+            const room = getRoom(roomId);
+            if (room) {
+                const playerInRoom = room.players.find(p => p.id === playerId);
+                if (playerInRoom) {
+                    socket.join(roomId);
+                    socket.emit('room_joined', room);
+                    return;
+                }
+            }
+            socket.emit('error', 'Session expired or room closed');
+        });
+
         socket.on('pass_turn', ({ roomId }) => {
-            const result = passTurn(roomId, socket.id);
+            const result = passTurn(roomId, socket.playerId || socket.id);
             if (result.success) {
                 io.to(roomId).emit('game_update', result.room);
                 handleBotTurns(roomId);
@@ -43,6 +59,16 @@ module.exports = (io) => {
             const result = addBot(roomId);
             if (result.success) {
                 io.to(roomId).emit('room_update', result.room);
+            } else {
+                socket.emit('error', result.error);
+            }
+        });
+
+        socket.on('kick_player', ({ roomId, playerId }) => {
+            const result = kickPlayer(roomId, socket.playerId || socket.id, playerId);
+            if (result.success) {
+                io.to(roomId).emit('room_update', result.room);
+                io.to(roomId).emit('player_kicked', { playerId });
             } else {
                 socket.emit('error', result.error);
             }
@@ -106,7 +132,7 @@ module.exports = (io) => {
         });
 
         socket.on('play_card', ({ roomId, card }) => {
-            const result = playCard(roomId, socket.id, card);
+            const result = playCard(roomId, socket.playerId || socket.id, card);
             if (result.success) {
                 io.to(roomId).emit('game_update', result.room);
                 if (result.alertLowCards) {

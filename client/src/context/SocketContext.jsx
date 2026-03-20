@@ -7,6 +7,7 @@ export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
         // Use window.location.origin in production to connect to the same host
@@ -16,8 +17,20 @@ export const SocketProvider = ({ children }) => {
 
         const newSocket = io(socketUrl);
 
-        newSocket.on('connect', () => console.log('Socket Connected:', newSocket.id));
-        newSocket.on('connect_error', (err) => console.error('Socket Connection Error:', err));
+        newSocket.on('connect', () => {
+            console.log('Socket Connected:', newSocket.id);
+            setIsConnected(true);
+        });
+        
+        newSocket.on('disconnect', () => {
+             console.log('Socket Disconnected');
+             setIsConnected(false);
+        });
+
+        newSocket.on('connect_error', (err) => {
+             console.error('Socket Connection Error:', err);
+             setIsConnected(false);
+        });
 
         setSocket(newSocket);
 
@@ -25,7 +38,7 @@ export const SocketProvider = ({ children }) => {
     }, []);
 
     return (
-        <SocketContext.Provider value={socket}>
+        <SocketContext.Provider value={{ socket, isConnected }}>
             {children}
         </SocketContext.Provider>
     );

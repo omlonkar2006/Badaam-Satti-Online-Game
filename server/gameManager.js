@@ -29,8 +29,10 @@ function joinRoom(roomId, playerId, playerName, avatar = '👤') {
     const room = rooms.get(roomId);
     if (!room) return { error: 'Room not found' };
     if (room.status !== 'LOBBY') return { error: 'Game already in progress' };
+    if (room.players.some(p => p.id === playerId)) {
+        return { success: true, room }; // Successfully handle rejoins naturally
+    }
     if (room.players.length >= 4) return { error: 'Room is full' };
-    if (room.players.some(p => p.id === playerId)) return { error: 'Already in room' };
 
     room.players.push({ id: playerId, name: playerName, avatar, hand: [], score: 0 });
     return { success: true, room };
@@ -252,6 +254,16 @@ function calculateScores(room) {
     });
 }
 
+function kickPlayer(roomId, hostId, targetPlayerId) {
+    const room = rooms.get(roomId);
+    if (!room) return { error: 'Room not found' };
+    if (room.status !== 'LOBBY') return { error: 'Game already in progress' };
+    if (room.hostId !== hostId) return { error: 'Only the host can kick players' };
+    
+    room.players = room.players.filter(p => p.id !== targetPlayerId);
+    return { success: true, room };
+}
+
 function addBot(roomId) {
     const room = rooms.get(roomId);
     if (!room) return { error: 'Room not found' };
@@ -295,6 +307,7 @@ module.exports = {
     startGame,
     playCard,
     passTurn,
+    kickPlayer,
     addBot,
     executeBotTurn
 };

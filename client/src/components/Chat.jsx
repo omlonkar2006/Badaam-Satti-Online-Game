@@ -3,7 +3,7 @@ import { useSocket } from '../context/SocketContext';
 import { useAudio } from '../context/AudioContext';
 
 export default function Chat({ roomId, userId, userName, avatar }) {
-    const socket = useSocket();
+    const { socket } = useSocket();
     const { playSound } = useAudio();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
