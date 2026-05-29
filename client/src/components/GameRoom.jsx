@@ -7,7 +7,7 @@ import { useSocket } from '../context/SocketContext';
 import { useAudio } from '../context/AudioContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function GameRoom({ room, userId }) {
+export default function GameRoom({ room, userId, onLeaveRoom }) {
     const { socket } = useSocket();
     const { playSound } = useAudio();
     const isHost = room.hostId === userId;
@@ -169,6 +169,7 @@ export default function GameRoom({ room, userId }) {
                     room={room}
                     isHost={isHost}
                     onClose={() => setShowScoreboard(false)}
+                    onLeaveRoom={onLeaveRoom}
                 />
             )}
 

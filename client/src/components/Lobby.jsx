@@ -40,8 +40,8 @@ export default function Lobby({ playerId }) {
             <div className="card-container">
                 <div className="avatar-selection" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '10px' }}>
                     {AVATARS.map(avatar => (
-                        <div 
-                            key={avatar} 
+                        <div
+                            key={avatar}
                             onClick={() => setSelectedAvatar(avatar)}
                             style={{
                                 fontSize: '2rem',
@@ -100,6 +100,15 @@ export default function Lobby({ playerId }) {
                 )}
 
                 {error && <p style={{ color: 'red' }}>{error}</p>}
+            </div>
+
+            <div className="lobby-credits">
+                <p className="credits-text">
+                    Built by <span className="highlight-team">Brainstorm Games</span> by <span className="highlight-name">Om Lonkar</span> for the <span className="highlight-family">Kumbhar Family</span>
+                </p>
+                <p className="credits-inspiration">
+                    Inspiration of building this game from our beloved <span className="highlight-inspiration">Jiju</span> ❤️
+                </p>
             </div>
         </div>
     );

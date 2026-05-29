@@ -671,3 +671,67 @@ input:focus {
     font-size: 1rem;
   }
 }
+
+/* Lobby Credits Styling */
+.lobby-credits {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  max-width: 400px;
+  width: 90%;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeInCredits 1s ease-in-out;
+}
+
+.credits-text {
+  font-size: 0.95rem;
+  color: rgba(248, 250, 252, 0.85);
+  margin: 0 0 0.6rem 0;
+  line-height: 1.5;
+}
+
+.credits-inspiration {
+  font-size: 0.9rem;
+  color: rgba(248, 250, 252, 0.65);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.highlight-team {
+  font-weight: 700;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.highlight-name {
+  font-weight: 700;
+  color: #a78bfa;
+}
+
+.highlight-family {
+  font-weight: 700;
+  color: #f472b6;
+}
+
+.highlight-inspiration {
+  font-weight: 700;
+  background: linear-gradient(135deg, #f472b6, #fb7185);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+@keyframes fadeInCredits {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -11,7 +11,7 @@ function getRank(value) {
     return RANKS[value] || value;
 }
 
-export default function RoundEnd({ room, onNextRound, isHost, onClose }) {
+export default function RoundEnd({ room, onNextRound, isHost, onClose, onLeaveRoom }) {
     const { playSound } = useAudio();
     const { width, height } = useWindowSize();
     
@@ -100,7 +100,7 @@ export default function RoundEnd({ room, onNextRound, isHost, onClose }) {
                     </button>
                 )}
                 {isGameOver && (
-                    <button className="next-round-btn" onClick={() => window.location.reload()}>
+                    <button className="next-round-btn" onClick={onLeaveRoom}>
                         Back to Lobby
                     </button>
                 )}

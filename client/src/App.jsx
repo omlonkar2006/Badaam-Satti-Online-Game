@@ -100,6 +100,17 @@ function App() {
     };
   }, [socket]);
 
+  const handleLeaveRoom = () => {
+    const storedRoomId = sessionStorage.getItem('roomId');
+    const storedPlayerId = sessionStorage.getItem('playerId');
+    if (socket && storedRoomId && storedPlayerId) {
+      socket.emit('leave_room', { roomId: storedRoomId, playerId: storedPlayerId });
+    }
+    sessionStorage.removeItem('roomId');
+    setRoom(null);
+    setView('lobby');
+  };
+
   if (!socket) return <div>Connecting...</div>;
 
   return (
@@ -114,7 +125,7 @@ function App() {
       
       {notification && <div className="notification-bar">{notification}</div>}
       {view === 'lobby' && <Lobby playerId={playerId} />}
-      {view === 'game' && room && <GameRoom room={room} userId={playerId} />}
+      {view === 'game' && room && <GameRoom room={room} userId={playerId} onLeaveRoom={handleLeaveRoom} />}
     </div>
   );
 }
